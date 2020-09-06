@@ -25,7 +25,7 @@ const App = (state) => {
         <header></header>
         <main>
             ${Greeting(store.user.name)}
-            <section>
+            <section class="one">
                 <h3>Put things on the page!</h3>
                 <p>Here is an example section.</p>
                 <p>
@@ -101,5 +101,5 @@ const getImageOfTheDay = (state) => {
         .then(res => res.json())
         .then(apod => updateStore(store, { apod }))
 
-    return data
+    //return data
 }

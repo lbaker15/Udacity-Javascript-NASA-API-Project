@@ -14,6 +14,11 @@ header {
 main {
   flex: 1;
   padding: 20px;
+  font-family: sans-serif;
+}
+
+.one {
+  font-family: sans-serif;	
 }
 
 footer {
