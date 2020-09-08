@@ -1,14 +1,18 @@
-let store = {
-    user: { name: "Student" },
+let store = Immutable.Map({ 
+    user: Immutable.Map({ name: "Lael" }),
+	rover: '',
     apod: '',
-    rovers: ['Curiosity', 'Opportunity', 'Spirit'],
-}
+	roverName: ['Curiosity', 'Opportunity', 'Spirit'],
+	chosenRover: '',
+	dataLink: ['a.jpg', 'b.jpg', 'c.jpg', 'd.jpg', 'e.jpg', 'f.jpg'],
+	dataDate: []
+})
 
 // add our markup to the page
 const root = document.getElementById('root')
 
-const updateStore = (store, newState) => {
-    store = Object.assign(store, newState)
+const updateStore = (state, newState) => {
+    store = state.merge(newState)
     render(root, store)
 }
 
@@ -16,18 +20,21 @@ const render = async (root, state) => {
     root.innerHTML = App(state)
 }
 
+// listening for load event because page should load before any JS is called
+window.addEventListener('load', () => {
+    render(root, store)
+})
 
 // create content
 const App = (state) => {
-    let { rovers, apod } = state
+    let { rover, apod } = state
 
     return `
         <header></header>
         <main>
-            ${Greeting(store.user.name)}
+            ${Greeting(store.get("user").get("name"))}
             <section class="one">
                 <h3>Put things on the page!</h3>
-                <p>Here is an example section.</p>
                 <p>
                     One of the most popular websites at NASA is the Astronomy Picture of the Day. In fact, this website is one of
                     the most popular websites across all federal agencies. It has the popular appeal of a Justin Bieber video.
@@ -36,63 +43,150 @@ const App = (state) => {
                     explanation are returned. These keywords could be used as auto-generated hashtags for twitter or instagram feeds;
                     but generally help with discoverability of relevant imagery.
                 </p>
-                ${ImageOfTheDay(apod)}
+               
+				
+				${buttons(store.roverName)}
+				
+				${printDate(store.dataDate)}
+				
+				${printImages(store.get("dataLink"))}
+				
+				
             </section>
         </main>
         <footer></footer>
     `
 }
-
-// listening for load event because page should load before any JS is called
-window.addEventListener('load', () => {
-    render(root, store)
-})
+//${printImages(store.get("dataLink"))}
 
 // ------------------------------------------------------  COMPONENTS
 
 // Pure function that renders conditional information -- THIS IS JUST AN EXAMPLE, you can delete it.
+
+const buttons = (roverName) => {
+	return `
+	<ul class="listStyle">
+	
+	${store
+	.get("roverName")
+	.map(x => btnPass(x))
+	.join(" ")}
+	
+	</ul>
+	`
+}
+
+function btnPass(roverName) {
+	return `
+	
+	<button class="btnStyle" onclick="updateBtn('${String(roverName)}')">
+	${roverName}
+	</button>
+	
+	`
+}
+
+const updateBtn = (roverName) => {
+//console.log(roverName)
+const newState = store.set("chosenRover", roverName)
+updateStore(store, newState)
+mars(roverName)
+}
+
+const mars = (roverName) => {
+	marsTwo(roverName)
+}
+
+const marsTwo = (state) => {
+	let { roverName } = state
+	
+	fetch(`http://localhost:3000/rover/${state}`)
+        .then(res => res.json())
+        .then(data => {
+			let a = data.data.photos
+			//console.log(a)
+			let b = a.reduce(function(prev, current) {
+				return (prev.earth_date > current.earth_date) ? prev.earth_date : current.earth_date
+			})
+			//console.log(b)
+			let c = a.filter(x => {
+				return x.earth_date.includes(b)
+			})
+			let dataLinkA = c.filter(function(x, i) {
+				if (i < 6) {
+					return x
+				}
+			})
+			//console.log(dataLinkA)
+			let dataLink = dataLinkA.map(x => x.img_src)
+			let dataDate = b
+			
+			updateStore(store, { dataDate })
+			updateStore(store, { dataLink })
+			printImages(dataLink, dataDate)
+		})
+		
+
+/*
+			let dataLinkA = data.data.photos
+			let dataLinkB = dataLinkA.map(function(x, i) {
+			  if (i < 10) {
+				return x.img_src
+			  } else {
+				 return ''
+			  }
+			})
+			let dataLink = dataLinkB.filter(x => x !== '')
+			updateStore(store, { dataLink })
+			printImages(dataLink)
+		
+		})
+*/
+	
+}
+
+const printImages = (dataLink) => {
+	let a = dataLink
+	let b = Array.from(a)
+	return `
+	<section class="imgSection">
+	
+	<img class="imgStyle" src="${b[0]}">
+	<img class="imgStyle" src="${b[1]}">
+	<img class="imgStyle" src="${b[2]}">
+	<img class="imgStyle" src="${b[3]}">
+	<img class="imgStyle" src="${b[4]}">
+	<img class="imgStyle" src="${b[5]}">
+	
+	</section>
+	`
+}
+
+//Conditionals
+const printDate = () => {
+	let dataDate = store.get("dataDate")
+	console.log(dataDate.length == 0)
+	if (dataDate.length !== 0) {
+	return `	
+	<div class="dateStyle">Taken on the ${dataDate} </div>
+	`
+	} else {
+		return ``
+	}
+}
 const Greeting = (name) => {
     if (name) {
         return `
             <h1>Welcome, ${name}!</h1>
         `
     }
-
     return `
         <h1>Hello!</h1>
     `
 }
 
-// Example of a pure function that renders infomation requested from the backend
-const ImageOfTheDay = (apod) => {
 
-    // If image does not already exist, or it is not from today -- request it again
-    const today = new Date()
-    const photodate = new Date(apod.date)
-    console.log(photodate.getDate(), today.getDate());
-
-    console.log(photodate.getDate() === today.getDate());
-    if (!apod || apod.date === today.getDate() ) {
-        getImageOfTheDay(store)
-    }
-
-    // check if the photo of the day is actually type video!
-    if (apod.media_type === "video") {
-        return (`
-            <p>See today's featured video <a href="${apod.url}">here</a></p>
-            <p>${apod.title}</p>
-            <p>${apod.explanation}</p>
-        `)
-    } else {
-        return (`
-            <img src="${apod.image.url}" height="350px" width="100%" />
-            <p>${apod.image.explanation}</p>
-        `)
-    }
-}
-
-// ------------------------------------------------------  API CALLS
-
+/*
 // Example API call
 const getImageOfTheDay = (state) => {
     let { apod } = state
@@ -103,3 +197,4 @@ const getImageOfTheDay = (state) => {
 
     //return data
 }
+*/
