@@ -15,24 +15,12 @@ app.use('/', express.static(path.join(__dirname, '../public')))
 // your API calls
 
 // example API call
-/*
-app.get('/apod', async (req, res) => {
-    try {
-        let image = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${process.env.API_KEY}`)
-            .then(res => res.json())
-        res.send({ image })
-    } catch (err) {
-        console.log('error:', err);
-    }
-})
-*/
-
 
 app.get("/rover/curiosity", async (req, res) => {
   try {
 	let ROVERURL = `https://api.nasa.gov/mars-photos/api/v1/rovers/`
     let data = await fetch(
-      `${ROVERURL}curiosity/photos?api_key=${process.env.API_KEY}`
+      `${ROVERURL}curiosity/photos?sol=1000&api_key=${process.env.API_KEY}`
     ).then((res) => res.json());
     res.send({ data });
   } catch (err) {
@@ -45,7 +33,7 @@ app.get("/rover/opportunity", async (req, res) => {
   try {
 	let ROVERURL = `https://api.nasa.gov/mars-photos/api/v1/rovers/`
     let data = await fetch(
-      `${ROVERURL}opportunity/photos?api_key=${process.env.API_KEY}`
+      `${ROVERURL}opportunity/photos?sol=1000&api_key=${process.env.API_KEY}`
     ).then((res) => res.json());
     res.send({ data });
   } catch (err) {
@@ -58,7 +46,7 @@ app.get("/rover/spirit", async (req, res) => {
   try {
 	let ROVERURL = `https://api.nasa.gov/mars-photos/api/v1/rovers/`
     let data = await fetch(
-      `${ROVERURL}spirit/photos?api_key=${process.env.API_KEY}`
+      `${ROVERURL}spirit/photos?sol=1000&api_key=${process.env.API_KEY}`
     ).then((res) => res.json());
     res.send({ data });
   } catch (err) {
@@ -66,5 +54,15 @@ app.get("/rover/spirit", async (req, res) => {
     res.send("err");
   }
 });
+
+app.get('/apod', async (req, res) => {
+    try {
+        let image = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${process.env.API_KEY}`)
+            .then(res => res.json())
+        res.send({ image })
+    } catch (err) {
+        console.log('error:', err);
+    }
+})
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))

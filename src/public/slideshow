@@ -1,0 +1,40 @@
+/*
+const backwards = (dataLink) => {
+	
+<button onclick="backwards('${(b[0] + " " + b[1] + " " + b[2] + " " + b[3] + " " + b[4] + " " + b[5])}')">Prev</button>
+<button>Next</button>
+				
+	let a = dataLink.split(" ")
+	let c = []
+	c.push(a)
+	let d = c.flat()
+	var e
+
+	if (e == null) {
+	d.map(function(x, i, a){
+		//console.log("first")
+		if (i < 5) {
+		//console.log("below 5")
+		} else if (i == 5) {
+		a.unshift(x)
+		a.pop()
+		}
+		return e = d
+	})
+	} else if (e == d) {
+	e.map(function(x, i, a){
+		console.log("2")
+		if (i < 5) {
+		console.log("second")
+		} else if (i == 5) {
+		a.unshift(x)
+		a.pop()
+		}
+		return e
+	})		
+	}
+	
+	console.log("Final", d, e)
+	console.log(e == d)
+}
+*/

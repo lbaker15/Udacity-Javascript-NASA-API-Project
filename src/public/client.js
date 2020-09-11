@@ -1,11 +1,16 @@
 let store = Immutable.Map({ 
     user: Immutable.Map({ name: "Lael" }),
-	rover: '',
     apod: '',
 	roverName: ['Curiosity', 'Opportunity', 'Spirit'],
 	chosenRover: '',
-	dataLink: ['a.jpg', 'b.jpg', 'c.jpg', 'd.jpg', 'e.jpg', 'f.jpg'],
-	dataDate: []
+	data: [],
+	dataLink: [],
+	dataDate: [],
+	landing: '',
+	status: '',
+	launch: '',
+	camera: '',
+	sol: ''
 })
 
 // add our markup to the page
@@ -30,38 +35,68 @@ const App = (state) => {
     let { rover, apod } = state
 
     return `
-        <header></header>
+	<div class="fullCover">
+	 ${processImageOfTheDay(store.get("apod"))}
+	 </div>		   
+        <header>
+				${Greeting(store.get("user").get("name"))}
+				<h2>Select a rover</h2>
+				<div class="center">
+		   		${buttons(store.roverName)}
+				</div>
+				<div class="center">
+				${addTwo(createFull)}
+				</div>
+		</header>
+		
         <main>
-            ${Greeting(store.get("user").get("name"))}
+			
+		</div>		
+
             <section class="one">
-                <h3>Put things on the page!</h3>
-                <p>
-                    One of the most popular websites at NASA is the Astronomy Picture of the Day. In fact, this website is one of
-                    the most popular websites across all federal agencies. It has the popular appeal of a Justin Bieber video.
-                    This endpoint structures the APOD imagery and associated metadata so that it can be repurposed for other
-                    applications. In addition, if the concept_tags parameter is set to True, then keywords derived from the image
-                    explanation are returned. These keywords could be used as auto-generated hashtags for twitter or instagram feeds;
-                    but generally help with discoverability of relevant imagery.
-                </p>
-               
-				
-				${buttons(store.roverName)}
-				
-				${printDate(store.dataDate)}
-				
-				${printImages(store.get("dataLink"))}
-				
-				
+
+				${printImages(store.get("dataLink"), store.get("camera"), store.get("sol"))}
+							
             </section>
         </main>
-        <footer></footer>
-    `
+		</div>
+     `
 }
-//${printImages(store.get("dataLink"))}
 
 // ------------------------------------------------------  COMPONENTS
+const addTwo = (callback) => {
+	return callback(store.get("launch"), store.get("landing"), store.get("status"))
+}
+const createFull = (launch, landing, status) => {
+	return `
+	<ul class="info">
+	<li>Launch Date: ${launch}</li>
+	<li>Landing Date: ${landing}</li>
+	<li>Status: ${status}</li>
+	</ul>
+	`
+}
+const uiElement = (callback) => {
+	return callback(store.get("dataLink"), store.get("camera"), store.get("sol"))
+}
+const ui = (dataDate, camera, sol) => {
+	let cameraO = Array.from(camera)
+	let solO = Array.from(sol)
+	function myFunc(e, i){
+		return `text ${e}`
+		/*return `
+		<span class="camera">Camera: ${e[i]} </span>
+		<span class="sol">Sol: ${solO[i]} </span>
+		`*/
+	}
+	return cameraO.forEach(myFunc)
+	/*return `
+	${printDate(store.dataDate)}
+	<span class="camera">Camera: ${cameraO[0]} </span>
+	<span class="sol">Sol: ${solO[0]} </span>
+	`*/
+}
 
-// Pure function that renders conditional information -- THIS IS JUST AN EXAMPLE, you can delete it.
 
 const buttons = (roverName) => {
 	return `
@@ -79,96 +114,60 @@ const buttons = (roverName) => {
 function btnPass(roverName) {
 	return `
 	
-	<button class="btnStyle" onclick="updateBtn('${String(roverName)}')">
+	<span class="btnStyle" onclick="updateBtn('${String(roverName)}')">
 	${roverName}
-	</button>
+	</span>
 	
 	`
 }
 
 const updateBtn = (roverName) => {
-//console.log(roverName)
-const newState = store.set("chosenRover", roverName)
-updateStore(store, newState)
-mars(roverName)
-}
-
-const mars = (roverName) => {
+	const newState = store.set("chosenRover", roverName)
+	updateStore(store, newState)
 	marsTwo(roverName)
-}
-
-const marsTwo = (state) => {
-	let { roverName } = state
-	
-	fetch(`http://localhost:3000/rover/${state}`)
-        .then(res => res.json())
-        .then(data => {
-			let a = data.data.photos
-			//console.log(a)
-			let b = a.reduce(function(prev, current) {
-				return (prev.earth_date > current.earth_date) ? prev.earth_date : current.earth_date
-			})
-			//console.log(b)
-			let c = a.filter(x => {
-				return x.earth_date.includes(b)
-			})
-			let dataLinkA = c.filter(function(x, i) {
-				if (i < 6) {
-					return x
-				}
-			})
-			//console.log(dataLinkA)
-			let dataLink = dataLinkA.map(x => x.img_src)
-			let dataDate = b
-			
-			updateStore(store, { dataDate })
-			updateStore(store, { dataLink })
-			printImages(dataLink, dataDate)
-		})
-		
-
-/*
-			let dataLinkA = data.data.photos
-			let dataLinkB = dataLinkA.map(function(x, i) {
-			  if (i < 10) {
-				return x.img_src
-			  } else {
-				 return ''
-			  }
-			})
-			let dataLink = dataLinkB.filter(x => x !== '')
-			updateStore(store, { dataLink })
-			printImages(dataLink)
-		
-		})
-*/
-	
 }
 
 const printImages = (dataLink) => {
 	let a = dataLink
 	let b = Array.from(a)
+	if (dataLink.length !== 0) {
 	return `
+	<span class="head">Recent images</span>
+	
 	<section class="imgSection">
+		
+	<div class="imgGrid"><img class="imgStyle" src="${b[0]}"/></div>
+	<span class="imgInfo">${uiElement(ui)}</span>
 	
-	<img class="imgStyle" src="${b[0]}">
-	<img class="imgStyle" src="${b[1]}">
-	<img class="imgStyle" src="${b[2]}">
-	<img class="imgStyle" src="${b[3]}">
-	<img class="imgStyle" src="${b[4]}">
-	<img class="imgStyle" src="${b[5]}">
+	<div class="imgGridTwo"><img class="imgStyle" src="${b[1]}"/></div>
+	<span class="imgInfoTwo">${uiElement(ui)}</span>
+
+	<div class="imgGridThree"><img class="imgStyle" src="${b[2]}"/></div>
+	<span class="imgInfoThree">${uiElement(ui)}</span>
 	
-	</section>
+	<div class="imgGridFour"><img class="imgStyle" src="${b[3]}"></div>
+	<span class="imgInfoFour">${uiElement(ui)}</span>
+	
+	<div class="imgGridFive"><img class="imgStyle" src="${b[4]}"></div>
+	<span class="imgInfoFive">${uiElement(ui)}</span>
+	
+	<div class="imgGridSix"><img class="imgStyle" src="${b[5]}"></div>
+	<span class="imgInfoSix">${uiElement(ui)}</span>
+	
+	</section>					
 	`
+	} else {
+	return `  `
+	}
 }
+
 
 //Conditionals
 const printDate = () => {
 	let dataDate = store.get("dataDate")
-	console.log(dataDate.length == 0)
 	if (dataDate.length !== 0) {
 	return `	
-	<div class="dateStyle">Taken on the ${dataDate} </div>
+	<span class="dateStyle">Taken on the ${dataDate} </span>
 	`
 	} else {
 		return ``
@@ -184,9 +183,56 @@ const Greeting = (name) => {
         <h1>Hello!</h1>
     `
 }
+const processImageOfTheDay = (apod) => {
+	if (apod == '') {
+	getImageOfTheDay(apod)
+	} else {
+	let apodImg = Array.from(Array.from(apod)[0][1])
+	let apodImgPrint = (apodImg.filter(function(x, i){
+		return x[0] == 'url'
+	})).flat()[1]
+	return `
+		<div class="bgImg" style="background-image: url(${apodImgPrint});">
+	`
+	}
+}
+const processData = (newState) => {
+	let data = newState.get("data")
+	
+			//Getting most recent images with date
+			let dataDate = data.reduce(function(prev, current) {
+				return (prev.earth_date > current.earth_date) ? prev.earth_date : current.earth_date
+			})
+			let c = data.filter(x => {
+				return x.earth_date.includes(dataDate)
+			})
+			let dataLinkA = c.filter(function(x, i) {
+				if (i < 6) {
+					return x
+				}
+			})
+			let dataLink = dataLinkA.map(x => x.img_src)
+						
+			updateStore(store, { dataDate })
+			updateStore(store, { dataLink })
+			//printImages(dataLink, dataDate)
+			
+			//Pushing data of 6 items to store
+			let roverInfo = dataLinkA
+			updateStore(store, { roverInfo })
+			//Camera data			
+			let camera = roverInfo.map(x => x.camera).map(x => x.name)
+			let sol = roverInfo.map(x => x.sol)
+			//Info specific to rover
+			let landing = roverInfo[0].rover.landing_date
+			let status = roverInfo[0].rover.status
+			let launch = roverInfo[0].rover.launch_date
+			updateStore(store, { landing, status, launch, camera, sol })
+			
+		
+}
 
 
-/*
 // Example API call
 const getImageOfTheDay = (state) => {
     let { apod } = state
@@ -194,7 +240,20 @@ const getImageOfTheDay = (state) => {
     fetch(`http://localhost:3000/apod`)
         .then(res => res.json())
         .then(apod => updateStore(store, { apod }))
-
-    //return data
+		
 }
-*/
+
+const marsTwo = (state) => {
+	let { roverName } = state
+	
+	fetch(`http://localhost:3000/rover/${state}`)
+        .then(res => res.json())
+        .then(data => {
+			let a = data.data.photos
+			const newState = store.set("data", a)
+			updateStore(store, newState)
+			processData(newState)
+		})
+}
+
+
