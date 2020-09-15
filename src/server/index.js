@@ -16,16 +16,46 @@ app.use('/', express.static(path.join(__dirname, '../public')))
 
 // example API call
 
+/*	let array = ["Curiosity", "Opportunity", "Spirit"]
+	let arrayMap = array.map(x => {
+	app.get("/rover/${x}", async (req, res) => {
+	try {
+	let ROVERURL = `https://api.nasa.gov/mars-photos/api/v1/rovers/`
+    return data = await fetch(
+      `${ROVERURL}${x}/photos?sol=1000&api_key=${process.env.API_KEY}`
+		).then((res) => res.json());
+		res.send({ data });
+	  } catch (err) {
+		console.log("error:", err);
+		res.send("error");
+	  }
+	});
+	})
+*/
+/*
+let roverName = "Spirit"
+app.get("/rover", async (req, res) => {
+  try {
+	let ROVERURL = `https://api.nasa.gov/mars-photos/api/v1/rovers/`
+	let name = req.get('name');
+    let data = await fetch(
+      `${ROVERURL}${name}/photos?sol=1000&api_key=${process.env.API_KEY}`
+    ).then((res) => res.json());
+    res.send({ name });
+  } catch (err) {
+    res.send("error");
+  }
+});
+*/
 app.get("/rover/curiosity", async (req, res) => {
   try {
 	let ROVERURL = `https://api.nasa.gov/mars-photos/api/v1/rovers/`
     let data = await fetch(
-      `${ROVERURL}curiosity/photos?sol=1000&api_key=${process.env.API_KEY}`
+      `${ROVERURL}curiosity/photos?earth_date=2020-09-13&api_key=${process.env.API_KEY}`
     ).then((res) => res.json());
     res.send({ data });
   } catch (err) {
-    console.log("error:", err);
-    res.send("error");
+    res.send("err");
   }
 });
 
@@ -33,11 +63,10 @@ app.get("/rover/opportunity", async (req, res) => {
   try {
 	let ROVERURL = `https://api.nasa.gov/mars-photos/api/v1/rovers/`
     let data = await fetch(
-      `${ROVERURL}opportunity/photos?sol=1000&api_key=${process.env.API_KEY}`
+      `${ROVERURL}opportunity/photos?earth_date=2018-06-11&api_key=${process.env.API_KEY}`
     ).then((res) => res.json());
     res.send({ data });
   } catch (err) {
-    console.log("error:", err);
     res.send("err");
   }
 });
@@ -46,14 +75,15 @@ app.get("/rover/spirit", async (req, res) => {
   try {
 	let ROVERURL = `https://api.nasa.gov/mars-photos/api/v1/rovers/`
     let data = await fetch(
-      `${ROVERURL}spirit/photos?sol=1000&api_key=${process.env.API_KEY}`
+      `${ROVERURL}spirit/photos?earth_date=2010-03-21&api_key=${process.env.API_KEY}`
     ).then((res) => res.json());
     res.send({ data });
   } catch (err) {
-    console.log("error:", err);
     res.send("err");
   }
 });
+
+
 
 app.get('/apod', async (req, res) => {
     try {

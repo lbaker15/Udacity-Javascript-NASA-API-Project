@@ -10,7 +10,7 @@ let store = Immutable.Map({
 	status: '',
 	launch: '',
 	camera: '',
-	sol: ''
+	overlay: ''
 })
 
 // add our markup to the page
@@ -32,34 +32,31 @@ window.addEventListener('load', () => {
 
 // create content
 const App = (state) => {
-    let { rover, apod } = state
+    let { rover } = state
 
     return `
+	
 	<div class="fullCover">
+	
 	 ${processImageOfTheDay(store.get("apod"))}
+	 
 	 </div>		   
         <header>
 				${Greeting(store.get("user").get("name"))}
+				${apodBtn(store.get("apod"))}
+				
 				<h2>Select a rover</h2>
-				<div class="center">
+				<div class="mobileCenter">
 		   		${buttons(store.roverName)}
 				</div>
-				<div class="center">
 				${addTwo(createFull)}
-				</div>
-		</header>
+				
 		
-        <main>
-			
 		</div>		
-
-            <section class="one">
-
-				${printImages(store.get("dataLink"), store.get("camera"), store.get("sol"))}
-							
-            </section>
-        </main>
+		${oneSection()}
 		</div>
+		
+		
      `
 }
 
@@ -68,6 +65,7 @@ const addTwo = (callback) => {
 	return callback(store.get("launch"), store.get("landing"), store.get("status"))
 }
 const createFull = (launch, landing, status) => {
+	if (store.get("chosenRover") !== '') {
 	return `
 	<ul class="info">
 	<li>Launch Date: ${launch}</li>
@@ -75,26 +73,55 @@ const createFull = (launch, landing, status) => {
 	<li>Status: ${status}</li>
 	</ul>
 	`
+	} else {
+		return ` `
+	}
 }
 const uiElement = (callback) => {
-	return callback(store.get("dataLink"), store.get("camera"), store.get("sol"))
+	return callback(store.get("dataLink"), store.get("camera"), store.get("dataDate"))
 }
-const ui = (dataDate, camera, sol) => {
+const ui = (dataLink, camera, dataDate) => {
+	let b = Array.from(dataLink)
+	let c = Array.from(dataDate)
 	let cameraO = Array.from(camera)
-	let solO = Array.from(sol)
-	function myFunc(e, i){
-		return `text ${e}`
-		/*return `
-		<span class="camera">Camera: ${e[i]} </span>
-		<span class="sol">Sol: ${solO[i]} </span>
-		`*/
+
+	if (store.get("chosenRover") !== '' && camera.length !== 0 && store.get("overlay") == '') {
+	return b.map(function(x, i) { 
+	return `	
+	<div class="imgGrid">
+	<img class="imgStyle" src="${x}"/>
+	<div class="color">
+	<div class="infoG">
+	Date: ${c[i]}<br>
+	Camera: ${cameraO[i]}
+	</div>
+	</div>
+	</div>
+	`
+	})
+	
+	} else {
+	return `  `
 	}
-	return cameraO.forEach(myFunc)
-	/*return `
-	${printDate(store.dataDate)}
-	<span class="camera">Camera: ${cameraO[0]} </span>
-	<span class="sol">Sol: ${solO[0]} </span>
-	`*/
+}
+const oneSection = () => {
+	if (store.get("chosenRover") !== '') {
+	return `
+		<section class="one">
+			
+			<span class="head">Recent Images</span>
+							
+			<section class="imgSection">
+				
+				${uiElement(ui)}
+				
+			</section>
+							
+        </section>
+	`
+	} else {
+		return ``
+	}
 }
 
 
@@ -113,7 +140,6 @@ const buttons = (roverName) => {
 
 function btnPass(roverName) {
 	return `
-	
 	<span class="btnStyle" onclick="updateBtn('${String(roverName)}')">
 	${roverName}
 	</span>
@@ -127,52 +153,9 @@ const updateBtn = (roverName) => {
 	marsTwo(roverName)
 }
 
-const printImages = (dataLink) => {
-	let a = dataLink
-	let b = Array.from(a)
-	if (dataLink.length !== 0) {
-	return `
-	<span class="head">Recent images</span>
-	
-	<section class="imgSection">
-		
-	<div class="imgGrid"><img class="imgStyle" src="${b[0]}"/></div>
-	<span class="imgInfo">${uiElement(ui)}</span>
-	
-	<div class="imgGridTwo"><img class="imgStyle" src="${b[1]}"/></div>
-	<span class="imgInfoTwo">${uiElement(ui)}</span>
-
-	<div class="imgGridThree"><img class="imgStyle" src="${b[2]}"/></div>
-	<span class="imgInfoThree">${uiElement(ui)}</span>
-	
-	<div class="imgGridFour"><img class="imgStyle" src="${b[3]}"></div>
-	<span class="imgInfoFour">${uiElement(ui)}</span>
-	
-	<div class="imgGridFive"><img class="imgStyle" src="${b[4]}"></div>
-	<span class="imgInfoFive">${uiElement(ui)}</span>
-	
-	<div class="imgGridSix"><img class="imgStyle" src="${b[5]}"></div>
-	<span class="imgInfoSix">${uiElement(ui)}</span>
-	
-	</section>					
-	`
-	} else {
-	return `  `
-	}
-}
 
 
 //Conditionals
-const printDate = () => {
-	let dataDate = store.get("dataDate")
-	if (dataDate.length !== 0) {
-	return `	
-	<span class="dateStyle">Taken on the ${dataDate} </span>
-	`
-	} else {
-		return ``
-	}
-}
 const Greeting = (name) => {
     if (name) {
         return `
@@ -183,51 +166,149 @@ const Greeting = (name) => {
         <h1>Hello!</h1>
     `
 }
+
+
 const processImageOfTheDay = (apod) => {
 	if (apod == '') {
 	getImageOfTheDay(apod)
 	} else {
 	let apodImg = Array.from(Array.from(apod)[0][1])
+	let apodMedia = (apodImg.filter(function(x, i){
+		return x[0] == 'media_type'
+	})).flat()[1]
+	
+	if (apodMedia == 'video') {
 	let apodImgPrint = (apodImg.filter(function(x, i){
 		return x[0] == 'url'
 	})).flat()[1]
 	return `
-		<div class="bgImg" style="background-image: url(${apodImgPrint});">
+		<div class="bgImg" style="background-image: url(b.jpg);background-size: cover;">
 	`
+	
+	} else if (apodMedia == 'image') {	
+	
+	let apodImgPrint = (apodImg.filter(function(x, i){
+		return x[0] == 'url'
+	})).flat()[1]
+	return `
+		<div class="bgImg" style="background-image: url(${apodImgPrint}); background-size: cover;">
+	`
+	} else {
+		return ` `
+	}
 	}
 }
+
+const apodBtn = (apod) => {
+	
+	if(apod == '') {
+	return ` 
+		Loading...
+		`
+	} else {	
+	let a = Array.from(apod)[0][1]
+	let url = Array.from(a).filter(x => x[0] == 'hdurl')
+	let media = Array.from(a).filter(x => x[0] == 'media_type')
+	let info = Array.from(a).filter(x => x[0] == 'copyright' || x[0] == 'title')
+		
+	let overlay = store.get("overlay")
+	if (overlay == 'open') {
+	if (media[0][1] == 'image') {
+		if (info.length == 1) {
+			return `
+				<div class="apodOverlay">
+				
+				<div class="close" onclick="closeApod()">X</div>
+				<div class="apodInfo">
+				<img class="apodImage" src="${url[0][1]}"/>
+				</div>
+				
+				<div class="apodText">
+				${(info[0][0]).toUpperCase()}: ${info[0][1]} 
+				</div>
+				
+				</div>
+			`
+		} else {
+			return `
+				<div class="apodOverlay">
+				
+				<div class="close" onclick="closeApod()">X</div>
+				<div class="apodInfo">
+				<img class="apodImage" src="${url[0][1]}"/>
+				</div>
+				
+				<div class="apodText">
+				${(info[1][0]).toUpperCase()}: ${info[1][1]}
+				${(info[0][0]).toUpperCase()}: ${info[0][1]} 
+				</div>
+				
+				</div>
+			`
+		}
+	} else if (media[0][1] == 'video') {
+		return `
+		<div class="apodOverlay">
+		
+		<div class="close" onclick="closeApod()">X</div>
+		<div class="apodInfo">
+		
+		<iframe class="apodVideo" src="${url[0][1]}" 
+		frameborder="0" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen>
+		</iframe>
+		
+		</div>
+		
+		</div>
+	`	
+	} else {
+		//console.log("apodBtn not image of video")
+	}
+	} else {	
+	return `
+		<div style="margin-left: 50px;" class="center">
+		<div class="btnStyle" onclick="openApod()">Image of the day</div>
+		</div>		
+	`
+	} 
+}
+}
+const openApod = () => {
+	const overlay = "open"
+	const chosenRover = ""
+	updateStore(store, { overlay, chosenRover })
+}
+const closeApod = () => {
+	const newState = store.set("overlay", "")
+	updateStore(store, newState)
+}
+
+
 const processData = (newState) => {
 	let data = newState.get("data")
 	
-			//Getting most recent images with date
-			let dataDate = data.reduce(function(prev, current) {
-				return (prev.earth_date > current.earth_date) ? prev.earth_date : current.earth_date
-			})
-			let c = data.filter(x => {
-				return x.earth_date.includes(dataDate)
-			})
-			let dataLinkA = c.filter(function(x, i) {
+			let dataLinkA = data.filter(function(x, i) {
 				if (i < 6) {
 					return x
 				}
 			})
+			let dataDate = dataLinkA.map(x => x.earth_date)
 			let dataLink = dataLinkA.map(x => x.img_src)
 						
 			updateStore(store, { dataDate })
 			updateStore(store, { dataLink })
-			//printImages(dataLink, dataDate)
 			
 			//Pushing data of 6 items to store
 			let roverInfo = dataLinkA
+			//console.log("rover info", roverInfo)
 			updateStore(store, { roverInfo })
 			//Camera data			
 			let camera = roverInfo.map(x => x.camera).map(x => x.name)
-			let sol = roverInfo.map(x => x.sol)
 			//Info specific to rover
 			let landing = roverInfo[0].rover.landing_date
 			let status = roverInfo[0].rover.status
 			let launch = roverInfo[0].rover.launch_date
-			updateStore(store, { landing, status, launch, camera, sol })
+			updateStore(store, { landing, status, launch, camera })
 			
 		
 }
@@ -239,7 +320,9 @@ const getImageOfTheDay = (state) => {
 
     fetch(`http://localhost:3000/apod`)
         .then(res => res.json())
-        .then(apod => updateStore(store, { apod }))
+        .then(apod => {updateStore(store, { apod })
+		//console.log("after apod been fetched")
+		})
 		
 }
 
@@ -249,11 +332,11 @@ const marsTwo = (state) => {
 	fetch(`http://localhost:3000/rover/${state}`)
         .then(res => res.json())
         .then(data => {
+			//console.log(data)
 			let a = data.data.photos
 			const newState = store.set("data", a)
 			updateStore(store, newState)
 			processData(newState)
 		})
 }
-
 
