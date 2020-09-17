@@ -12,56 +12,41 @@ app.use(bodyParser.json())
 
 app.use('/', express.static(path.join(__dirname, '../public')))
 
-// your API calls
-
-// example API call
-app.get('/marsAPI', async (req, res) => {
+//Earth date is set to max date for each rover
+app.get('/rover/:roverName', async (req, res) => {
     try {
-        let name = req.get('roverName');
-        let image = await fetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${name}/photos?sol=10&api_key=${process.env.API_KEY}`)
+        let name = req.params['roverName']
+		if (name == "Curiosity") {
+		//Returns yesterdays date				
+		let today = new Date()
+		let date = new Date(today);
+		date.setDate(date.getDate() - 1)
+		let earth_dat = date.toISOString().substring(0, 10)
+		let earth_date = earth_dat;
+
+        let data = await fetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${name}/photos?earth_date=${earth_date}&api_key=${process.env.API_KEY}`)
             .then(res => res.json());
-        res.send({ image });
+        res.send({ data });
+		}
+		if (name == "Spirit") {
+			let earth_date = "earth_date=2010-03-21";
+		
+        let data = await fetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${name}/photos?${earth_date}&api_key=${process.env.API_KEY}`)
+            .then(res => res.json());
+        res.send({ data });
+		}
+		if (name == "Opportunity") {
+			let earth_date = "earth_date=2018-06-11";
+		
+        let data = await fetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${name}/photos?${earth_date}&api_key=${process.env.API_KEY}`)
+            .then(res => res.json());
+        res.send({ data });
+		}
     } catch (err) {
         console.log('error:', err);
     }
 })
-/*
-app.get("/rover/curiosity", async (req, res) => {
-  try {
-	let ROVERURL = `https://api.nasa.gov/mars-photos/api/v1/rovers/`
-    let data = await fetch(
-      `${ROVERURL}curiosity/photos?earth_date=2020-09-13&api_key=${process.env.API_KEY}`
-    ).then((res) => res.json());
-    res.send({ data });
-  } catch (err) {
-    res.send("err");
-  }
-});
 
-app.get("/rover/opportunity", async (req, res) => {
-  try {
-	let ROVERURL = `https://api.nasa.gov/mars-photos/api/v1/rovers/`
-    let data = await fetch(
-      `${ROVERURL}opportunity/photos?earth_date=2018-06-11&api_key=${process.env.API_KEY}`
-    ).then((res) => res.json());
-    res.send({ data });
-  } catch (err) {
-    res.send("err");
-  }
-});
-
-app.get("/rover/spirit", async (req, res) => {
-  try {
-	let ROVERURL = `https://api.nasa.gov/mars-photos/api/v1/rovers/`
-    let data = await fetch(
-      `${ROVERURL}spirit/photos?earth_date=2010-03-21&api_key=${process.env.API_KEY}`
-    ).then((res) => res.json());
-    res.send({ data });
-  } catch (err) {
-    res.send("err");
-  }
-});
-*/
 app.get('/apod', async (req, res) => {
     try {
         let image = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${process.env.API_KEY}`)

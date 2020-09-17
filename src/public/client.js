@@ -10,7 +10,8 @@ let store = Immutable.Map({
 	status: '',
 	launch: '',
 	camera: '',
-	overlay: ''
+	overlay: '',
+	maxDate: []
 })
 
 // add our markup to the page
@@ -287,9 +288,55 @@ const oneSection = () => {
 		return ``
 	}
 }
+
+// Apod API call
+const getImageOfTheDay = (state) => {
+    let { apod } = state
+    fetch(`http://localhost:3000/apod`)
+        .then(res => res.json())
+        .then(apod => {updateStore(store, { apod })
+	})
+		
+}
+//Rover API call
+const marsTwo = (state) => {
+	let { roverName } = state
+	fetch(`http://localhost:3000/rover/${state}`)
+        .then(res => res.json())
+        .then(data => {
+			//console.log(data)
+			let a = data.data.photos
+			const newState = store.set("data", a)
+			updateStore(store, newState)
+			processData()
+	})
+}
+/*
+const maxDate = (state) => {
+	fetch(`http://localhost:3000/rover/maxDate`)
+        .then(res => res.json())
+        .then(data => {
+			let a = data.data.rovers[0].max_date
+			let maxDate = a
+			updateStore(store, {maxDate})
+			processData()
+	})
+}
+*/
 //Processing rover data
-const processData = (newState) => {
-	let data = newState.get("data")
+const processData = () => {
+	let data = store.get("data")
+	//IF made two calls then compared to eachother
+	/*let date = store.get("maxDate")
+	let a = data.map(x => x).filter(x => x.earth_date == date)	
+	let b = a.filter(function(x, i){  
+		if (i < 6) { 
+		return x 
+		} 
+	})
+	console.log(b)
+	*/
+	
 	let dataLinkA = data.filter(function(x, i) {
 		if (i < 6) {
 			return x
@@ -309,24 +356,13 @@ const processData = (newState) => {
 	updateStore(store, { landing, status, launch, camera })
 }
 
-// Apod API call
-const getImageOfTheDay = (state) => {
-    let { apod } = state
-    fetch(`http://localhost:3000/apod`)
-        .then(res => res.json())
-        .then(apod => {updateStore(store, { apod })
-	})
-		
-}
-//Rover API call
-const marsTwo = (state) => {
-	let { roverName } = state
-	fetch(`http://localhost:3000/rover/${state}`)
-        .then(res => res.json())
-        .then(data => {
-			let a = data.data.photos
-			const newState = store.set("data", a)
-			updateStore(store, newState)
-			processData(newState)
-	})
-}
+//How to find yesterdays date
+	/*
+	let today = new Date()
+	let date = new Date(today);
+	date.setDate(date.getDate() - 1)
+	let earth_date = date.toISOString().substring(0, 10)
+	console.log(earth_date)
+	*/
+	
+
