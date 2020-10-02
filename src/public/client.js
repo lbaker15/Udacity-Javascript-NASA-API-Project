@@ -84,20 +84,20 @@ const processImageOfTheDay = (apod) => {
 	if (apod == '') {
 		getImageOfTheDay(apod);
 	} else {
-		let apodImg = Array.from(Array.from(apod)[0][1]);
-		let apodMedia = (apodImg.filter(function(x, i){
-			return x[0] == 'media_type'
+		const apodImg = Array.from(Array.from(apod).flat()[1])
+		const apodMedia = (apodImg.filter(function(x, i){
+			return x.includes("media_type")
 		})).flat()[1];
 		if (apodMedia == 'video') {
 			let apodImgPrint = (apodImg.filter(function(x, i){
-				return x[0] == 'url'
+				return x.includes('url')
 			})).flat()[1];
 			return `
 				<div class="bgImg" style="background-image: url(b.jpg);background-size: cover;">
 			`
 		} else if (apodMedia == 'image') {	
 			let apodImgPrint = (apodImg.filter(function(x, i){
-				return x[0] == 'url'
+				return x.includes('url')
 			})).flat()[1];
 			return `
 				<div class="bgImg" style="background-image: url(${apodImgPrint}); background-size: cover;">
@@ -116,13 +116,13 @@ const apodBtn = (apod) => {
 			`
 	} else {
 		//If apod call returned & overlay is open then display apod content
-		let a = Array.from(apod)[0][1];
-		let url = Array.from(a).filter(x => x[0] == 'hdurl');
-		let media = Array.from(a).filter(x => x[0] == 'media_type');
-		let info = Array.from(a).filter(x => x[0] == 'copyright' || x[0] == 'title');
-		let overlay = store.get("overlay");
+		const a = Array.from(apod).flat()[1];
+		const url = Array.from(a).filter(x => x.includes('hdurl'));
+		const media = Array.from(a).filter(x => x.includes('media_type'));
+		const info = Array.from(a).filter(x => x.includes('copyright') || x.includes('title'));
+		const overlay = store.get("overlay");
 			if (overlay == 'open') {
-				if (media[0][1] == 'image') {
+				if (media.flat()[1] == 'image') {
 					if (info.length == 1) {
 						return `
 							<div class="apodOverlay">
@@ -155,7 +155,7 @@ const apodBtn = (apod) => {
 						</div>
 					`
 				}
-			} else if (media[0][1] == 'video') {
+			} else if (media.flat()[1] == 'video') {
 				return `
 				<div class="apodOverlay">
 				
@@ -304,65 +304,43 @@ const marsTwo = (state) => {
 	fetch(`http://localhost:3000/rover/${state}`)
         .then(res => res.json())
         .then(data => {
-			//console.log(data)
 			let a = data.data.photos
 			const newState = store.set("data", a)
 			updateStore(store, newState)
 			processData()
 	})
 }
-/*
-const maxDate = (state) => {
-	fetch(`http://localhost:3000/rover/maxDate`)
-        .then(res => res.json())
-        .then(data => {
-			let a = data.data.rovers[0].max_date
-			let maxDate = a
-			updateStore(store, {maxDate})
-			processData()
-	})
-}
-*/
+
 //Processing rover data
 const processData = () => {
-	let data = store.get("data")
-	//IF made two calls then compared to eachother
-	/*let date = store.get("maxDate")
-	let a = data.map(x => x).filter(x => x.earth_date == date)	
-	let b = a.filter(function(x, i){  
-		if (i < 6) { 
-		return x 
-		} 
-	})
-	console.log(b)
-	*/
-	
-	let dataLinkA = data.filter(function(x, i) {
+	const data = store.get("data")
+	const dataLinkA = data.filter(function(x, i) {
 		if (i < 6) {
 			return x
 		}
 	})
-	let dataDate = dataLinkA.map(x => x.earth_date)
-	let dataLink = dataLinkA.map(x => x.img_src)
+	const dataDate = dataLinkA.map(x => x.earth_date)
+	const dataLink = dataLinkA.map(x => x.img_src)
 	updateStore(store, { dataDate })
 	updateStore(store, { dataLink })
-	let roverInfo = dataLinkA
+	const roverInfo = dataLinkA
+	
 	//Camera data			
-	let camera = roverInfo.map(x => x.camera).map(x => x.name)
+	const camera = roverInfo.map(x => x.camera).map(x => x.name)
+	
 	//Info specific to rover
-	let landing = roverInfo[0].rover.landing_date
-	let status = roverInfo[0].rover.status
-	let launch = roverInfo[0].rover.launch_date
+	const landing = String(roverInfo.map(x => x.rover.landing_date).filter((item, i) => {
+		return roverInfo.map(x => x.rover.landing_date).indexOf(item) === i
+	}))
+	const status = String(roverInfo.map(x => x.rover.status).filter((item, i) => {
+		return roverInfo.map(x => x.rover.status).indexOf(item) === i
+	}))
+	const launch = String(roverInfo.map(x => x.rover.launch_date).filter((item, i) => {
+		return roverInfo.map(x => x.rover.launch_date).indexOf(item) === i
+	}))
 	updateStore(store, { landing, status, launch, camera })
+	
 }
 
-//How to find yesterdays date
-	/*
-	let today = new Date()
-	let date = new Date(today);
-	date.setDate(date.getDate() - 1)
-	let earth_date = date.toISOString().substring(0, 10)
-	console.log(earth_date)
-	*/
-	
+
 
