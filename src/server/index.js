@@ -21,26 +21,35 @@ app.get('/rover/:roverName', async (req, res) => {
 		let today = new Date()
 		let date = new Date(today);
 		date.setDate(date.getDate() - 1)
-		let earth_dat = date.toISOString().substring(0, 10)
-		let earth_date = earth_dat;
+		let earth_date = date.toISOString().substring(0, 10)
+		console.log(earth_date)
 
         let data = await fetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${name}/photos?earth_date=${earth_date}&api_key=${process.env.API_KEY}`)
-            .then(res => res.json());
-        res.send({ data });
+            .then(res => res.json())
+			.then(data => {
+				if (data.photos.length === 0) {
+					fetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${name}/photos?sol=2000&api_key=${process.env.API_KEY}`)
+					.then(res => res.json())
+					.then(data => res.send({ data }))
+				} else {
+					res.send({ data })
+				}
+			})
+			
 		}
 		if (name == "Spirit") {
 			let earth_date = "earth_date=2010-03-21";
 		
-        let data = await fetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${name}/photos?${earth_date}&api_key=${process.env.API_KEY}`)
-            .then(res => res.json());
-        res.send({ data });
+        fetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${name}/photos?${earth_date}&api_key=${process.env.API_KEY}`)
+            .then(res => res.json())
+			.then(data => res.send({ data }));
 		}
 		if (name == "Opportunity") {
 			let earth_date = "earth_date=2018-06-11";
 		
-        let data = await fetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${name}/photos?${earth_date}&api_key=${process.env.API_KEY}`)
-            .then(res => res.json());
-        res.send({ data });
+        fetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${name}/photos?${earth_date}&api_key=${process.env.API_KEY}`)
+            .then(res => res.json())
+			.then(data => res.send({ data }));
 		}
     } catch (err) {
         console.log('error:', err);

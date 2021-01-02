@@ -11,7 +11,9 @@ let store = Immutable.Map({
 	launch: '',
 	camera: '',
 	overlay: '',
-	maxDate: []
+	maxDate: [],
+	loaded: false,
+	apodImage: ''
 })
 
 // add our markup to the page
@@ -34,27 +36,42 @@ window.addEventListener('load', () => {
 // create content
 const App = (state) => {
     let { rover } = state
-
+	let loaded = store.get("loaded");
     return `
+		${loader()}
 		<div class="fullCover">
 			${processImageOfTheDay(store.get("apod"))}
-		 </div>		   
+		</div>	 
 		<header>
 			${Greeting(store.get("user").get("name"))}
 			${apodBtn(store.get("apod"))}
-			<h2>Select a rover</h2>
-			<div class="mobileCenter">
-				${buttons(store.roverName)}
-			</div>
+			${buttons(store.roverName)}
 				${addTwo(createFull)}
 				${rocks()}
 			</div>		
 			${oneSection()}
 		</div>
+		</header>
      `
+
+}
+//Loader
+const loader = () => {
+	const loaded = store.get("loaded")
+	if (loaded === false) {
+		return `
+		<div class="loader">
+		Loading...
+		</div>
+		`
+	} else {
+		return ``
+	}
 }
 //Rock animation
 const rocks = () => {
+	const loaded = store.get("loaded")
+	if (loaded === true) {
 	if (store.get("chosenRover") == '') {
 		return `
 				<div class="rocks">
@@ -78,6 +95,9 @@ const rocks = () => {
 			</div>
 		`
 	}
+	} else {
+		return ``
+	}
 }
 //Processing apod info to create background image
 const processImageOfTheDay = (apod) => {
@@ -96,11 +116,11 @@ const processImageOfTheDay = (apod) => {
 				<div class="bgImg" style="background-image: url(b.jpg);background-size: cover;">
 			`
 		} else if (apodMedia == 'image') {	
-			let apodImgPrint = (apodImg.filter(function(x, i){
+			const apodImage = apodImg.filter(function(x, i){
 				return x.includes('url')
-			})).flat()[1];
+			}).flat()[1]
 			return `
-				<div class="bgImg" style="background-image: url(${apodImgPrint}); background-size: cover;">
+				<div class="bgImg" style="background-image: url(${apodImage}); background-size: cover;">
 			`
 		} else {
 			return ` `
@@ -109,12 +129,8 @@ const processImageOfTheDay = (apod) => {
 }
 //Creating content of apod overlay & image of the day button
 const apodBtn = (apod) => {
-	//If apod call hasn't returned yet then display loading
-	if(apod == '') {
-		return ` 
-			Loading...
-			`
-	} else {
+	const loaded = store.get("loaded")
+	if(loaded === true) {
 		//If apod call returned & overlay is open then display apod content
 		const a = Array.from(apod).flat()[1];
 		const url = Array.from(a).filter(x => x.includes('hdurl'));
@@ -181,6 +197,8 @@ const apodBtn = (apod) => {
 			</div>		
 		`
 		} 
+	} else {
+		return ``
 	}
 }
 //Altering store to reflect state of the overlay
@@ -195,6 +213,8 @@ const closeApod = () => {
 }
 //Greeting
 const Greeting = (name) => {
+	const loaded = store.get("loaded");
+	if (loaded === true) {
     if (name) {
         return `
             <h1>Welcome, ${name}!</h1>
@@ -203,24 +223,40 @@ const Greeting = (name) => {
     return `
         <h1>Hello!</h1>
     `
+	} else {
+		return ``
+	}
 }
 //Rover buttons
 const buttons = (roverName) => {
+	const loaded = store.get("loaded")
+	if (loaded === true) {
 	return `
+	<h2>Select a rover</h2>
+	<div class="mobileCenter">
 	<ul class="listStyle">
 		${store
 		.get("roverName")
 		.map(x => btnPass(x))
 		.join(" ")}
 	</ul>
+	</div>
 	`
+	} else {
+		return ``
+	}
 }
 function btnPass(roverName) {
+	const loaded = store.get("loaded")
+	if (loaded === true) {
 	return `
 		<span class="btnStyle" onclick="updateBtn('${String(roverName)}')">
 		${roverName}
 		</span>
 	`
+	} else {
+		return ``
+	}
 }
 const updateBtn = (roverName) => {
 	const newState = store.set("chosenRover", roverName);
@@ -233,7 +269,8 @@ const addTwo = (callback) => {
 }
 //Creating rover information list 
 const createFull = (launch, landing, status) => {
-	if (store.get("chosenRover") !== '') {
+	const loaded = store.get("loaded")
+	if (loaded === true && store.get("chosenRover") !== '') {
 		return `
 			<ul class="info">
 			<li>Launch Date: ${launch}</li>
@@ -242,8 +279,9 @@ const createFull = (launch, landing, status) => {
 			</ul>
 		`
 	} else {
-		return ` `
+		return ``
 	}
+	
 }
 //Rover grid - appears on click on rover buttons
 //Calling parameters from store
@@ -294,8 +332,10 @@ const getImageOfTheDay = (state) => {
     let { apod } = state
     fetch(`http://localhost:3000/apod`)
         .then(res => res.json())
-        .then(apod => {updateStore(store, { apod })
-	})
+        .then(apod => {
+			let loaded = true;
+			updateStore(store, { apod, loaded })
+		})
 		
 }
 //Rover API call
@@ -305,6 +345,7 @@ const marsTwo = (state) => {
         .then(res => res.json())
         .then(data => {
 			let a = data.data.photos
+			console.log(a)
 			const newState = store.set("data", a)
 			updateStore(store, newState)
 			processData()
@@ -319,6 +360,7 @@ const processData = () => {
 			return x
 		}
 	})
+	console.log(data)
 	const dataDate = dataLinkA.map(x => x.earth_date)
 	const dataLink = dataLinkA.map(x => x.img_src)
 	updateStore(store, { dataDate })

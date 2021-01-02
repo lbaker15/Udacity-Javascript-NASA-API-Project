@@ -292,7 +292,6 @@ footer {
 	display: grid;
 }
 .listStyle {
-	width: 250px;
 	justify-content: center;
 	margin-top: -15px;
 }
@@ -310,8 +309,32 @@ footer {
 	display: grid;
 	gap: 50px;
 }
+.loader {
+	background: black;
+	width: 100vw;
+	height: 100vh;
+	z-index: 10000;
+	color: white;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 50px;
+	position: absolute;
+}
 
 @media (min-width: 768px) {
+.loader {
+	background: black;
+	width: 100vw;
+	height: 100vh;
+	z-index: 10000;
+	color: white;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 50px;
+	position: absolute;
+}
 .imgSection {
 	display: grid;
 	grid-template-rows: 350px 70px 350px 70px 350px 70px;
@@ -358,6 +381,18 @@ footer {
 }
 
 @media (min-width: 1224px) {
+.loader {
+	background: black;
+	width: 100vw;
+	height: 100vh;
+	z-index: 10000;
+	color: white;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 50px;
+	position: absolute;
+}	
 .rocks {
 	margin-left: -95vw;
 	transform: scale(0.8);
@@ -528,9 +563,7 @@ footer {
 	margin-right: 50px;
 	display: inline-grid;
 }
-.listStyle {
-	width: 100%;
-}
+
 .mobileCenter {
 	justify-content: center;
 	display: flex;
@@ -542,12 +575,23 @@ body {
   background: black;
   overflow-x: hidden;
 }
-
+.loader {
+	background: black;
+	width: 100vw;
+	height: 100vh;
+	z-index: 10000;
+	color: white;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 50px;
+	position: absolute;
+}
 .fullCover {
 	background: rgba(0, 0, 0, 0.5);
 	background-attachment: fixed;
 	width: 100.5%;
-	height: 715px;
+	height: 100vh;
 	margin: 0px;
 }
 
