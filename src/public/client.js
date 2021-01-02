@@ -13,7 +13,8 @@ let store = Immutable.Map({
 	overlay: '',
 	maxDate: [],
 	loaded: false,
-	apodImage: ''
+	apodImage: '',
+	smallLoading: false
 })
 
 // add our markup to the page
@@ -241,7 +242,20 @@ const buttons = (roverName) => {
 		.join(" ")}
 	</ul>
 	</div>
+	${smallLoading()}
 	`
+	} else {
+		return ``
+	}
+}
+const smallLoading = () => {
+	const smallLoaded = store.get("smallLoading");
+	const launch = store.get("launch");
+
+	if (smallLoaded === true) {
+		return `
+			<div class="loaderSmall">Loading information... </div>
+		`
 	} else {
 		return ``
 	}
@@ -261,6 +275,8 @@ function btnPass(roverName) {
 const updateBtn = (roverName) => {
 	const newState = store.set("chosenRover", roverName);
 	updateStore(store, newState);
+	const load = store.set("smallLoading", true);
+	updateStore(store, load);
 	marsTwo(roverName);
 }
 //Rover information list
@@ -345,7 +361,6 @@ const marsTwo = (state) => {
         .then(res => res.json())
         .then(data => {
 			let a = data.data.photos
-			console.log(a)
 			const newState = store.set("data", a)
 			updateStore(store, newState)
 			processData()
@@ -360,16 +375,13 @@ const processData = () => {
 			return x
 		}
 	})
-	console.log(data)
 	const dataDate = dataLinkA.map(x => x.earth_date)
 	const dataLink = dataLinkA.map(x => x.img_src)
 	updateStore(store, { dataDate })
 	updateStore(store, { dataLink })
 	const roverInfo = dataLinkA
-	
 	//Camera data			
 	const camera = roverInfo.map(x => x.camera).map(x => x.name)
-	
 	//Info specific to rover
 	const landing = String(roverInfo.map(x => x.rover.landing_date).filter((item, i) => {
 		return roverInfo.map(x => x.rover.landing_date).indexOf(item) === i
@@ -380,6 +392,8 @@ const processData = () => {
 	const launch = String(roverInfo.map(x => x.rover.launch_date).filter((item, i) => {
 		return roverInfo.map(x => x.rover.launch_date).indexOf(item) === i
 	}))
+	const newState = store.set("smallLoading", false)
+	updateStore(store, newState)
 	updateStore(store, { landing, status, launch, camera })
 	
 }

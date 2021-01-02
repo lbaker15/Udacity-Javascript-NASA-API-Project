@@ -321,6 +321,10 @@ footer {
 	font-size: 50px;
 	position: absolute;
 }
+.loaderSmall {
+	font-size: 20px;
+	margin-top: 10px;
+}
 
 @media (min-width: 768px) {
 .loader {
